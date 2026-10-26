@@ -8,7 +8,7 @@ import "./styles/index.css";
 import App from "./views/App.vue";
 
 export const init = (sdk: Caido) => {
-  const app = createApp(App);
+  const app = createApp(App, { sdk });
 
   app.use(PrimeVue, {
     unstyled: true,

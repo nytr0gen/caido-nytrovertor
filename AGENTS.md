@@ -104,7 +104,7 @@ ComponentName/
 - The plugin contains only a frontend and a packaged Convert workflow. Do not restore the former toolkit utilities or backend.
 - Converted URL copying uses connection details from `RequestContext.request` and a rendered Host header override. It requires no backend request lookup and works for Replay drafts without a saved request ID.
 - Imported frontend CSS is prefix-wrapped under `#plugin--nytrovertor`; Caido-hosted view modes are outside that root. Do not rely on the plugin's Tailwind utility classes for layout inside a hosted view mode; size the view and its editor explicitly.
-- Caido already provides the `--c-*` and `--p-*` theme tokens globally, including dark-mode variants; keep the frontend stylesheet to scoped Tailwind utilities rather than copying Caido's palettes into the plugin root.
+- Caido already provides the `--c-*` and `--p-*` theme tokens globally, including dark-mode variants; keep the frontend stylesheet to scoped Tailwind utilities rather than copying Caido's palettes into the plugin root. Caido's host styles can disable text selection and list markers, so the tag reference opts in with `user-select: text` and the setup list uses `list-decimal`.
 - Nytrovertor is Replay-only in v1.
 - Nytrovertor keeps `<@...>` tags in the Replay editor and renders the converted output in the custom Replay request view mode labeled `Converted`.
 - Replay request view modes receive the live draft as the `draft` prop with current `@caido/sdk-frontend` typings; use `draft.raw` directly instead of mirroring editor state through a CodeMirror extension or plugin store.
@@ -129,6 +129,7 @@ ComponentName/
 - `b64u` emits unpadded URL-safe Base64 using `-` and `_`; the existing `b64d` accepts both standard and URL-safe alphabets, with or without padding. Do not add a separate Base64URL decode tag.
 - `htmld` must stay a pure string/entity decoder in `packages/workflows/src/nytrovertor-convert/render.ts`; do not reintroduce DOM parsing through `innerHTML` or `DOMParser`.
 - Nytrovertor preview, copy, and workflow execution rerender from their current template input each time; do not cache rendered results just to stabilize `uuid` or `ts`.
+- The page's live converter renders handwritten `<@...>` templates through the same renderer used by Replay, including generators and nested transforms.
 - Request menu items registered through `sdk.menu.registerItem(...)` are global across Caido request panes. A command `when(...)` handler prevents execution outside its intended page but does not hide the menu item there; use a page-specific slot when the action must only be visible on one page.
 
 ## Lint and Safety Notes
