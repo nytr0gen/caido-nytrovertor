@@ -11,7 +11,7 @@ const id = "nytrovertor";
 export default defineConfig({
   id,
   name: "Nytrovertor",
-  description: "Replay request templating and conversion for Caido",
+  description: "Template Caido Replay requests with inline transforms and generated values",
   version: "0.0.0",
   author: {
     name: "nytr0gen",

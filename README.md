@@ -1,18 +1,36 @@
 # Nytrovertor
 
-Request templating and conversion for Caido Replay.
+Template Caido Replay requests with inline transforms and generated values.
 
-## Features
+Write `<@...>` tags directly in Caido Replay requests to encode, decode, repeat, or generate text. Preview the rendered request in the `Converted` pane and send it through a Match and Replace workflow, while keeping the tagged draft in the editor.
 
-- Write Nytrovertor tags in the plugin page and see the converted text update live, with Copy buttons for input and output.
-- Use Auto to detect layered URL, HTML entity, Base64, or Hex encoding in selected text or the whole input and insert the matching decoder tags.
-- Write nested transform tags directly in Replay while keeping the tagged template in the editor.
-- Preview the rendered request in the `Converted` request pane.
-- Send rendered requests through the packaged `Nytrovertor Convert` Match and Replace workflow.
-- Copy the converted request or URL from the Replay request context menu.
-- Preserve the original request when parsing or conversion fails.
+## Use it in Replay
 
-## Nytrovertor tags
+Add tags to a Replay request where you want the conversion:
+
+```text
+GET /search?q=<@url>Hello world</@> HTTP/1.1
+```
+
+The `Converted` request pane previews `GET /search?q=Hello%20world HTTP/1.1`. Tags can be nested; `<@url><@b64>Hello world</@></@>` Base64-encodes the text, then URL-encodes the result. The request context menu can also copy the converted request or URL.
+
+To send converted requests, connect the packaged `Nytrovertor Convert` workflow to Replay with one Match and Replace rule:
+
+1. Create a Match and Replace rule.
+2. Set **Section** to `Request Raw`.
+3. Set **Matcher** to `Full`.
+4. Set **Replacer** to `Workflow` and choose `Nytrovertor Convert`.
+5. Enable the `Replay` source and the rule.
+
+Send with Caido's normal Replay action. The workflow converts the complete raw request just before sending; the tagged draft remains in the editor. If a tag or conversion fails, it sends the original request unchanged.
+
+## Try tags in the live converter
+
+Open **Nytrovertor** from the Caido sidebar to experiment with tags before using them in Replay. Enter a template in **Input** and see the result update in **Output** as you type.
+
+**Auto** detects likely layers of URL, HTML entity, Base64, or Hex encoding and inserts the corresponding decoder tags. Select part of the input to target it, or leave nothing selected to use the whole input. For example, `SGVsbG8%3D` becomes `<@b64d><@urld>SGVsbG8%3D</@></@>` and renders as `Hello`.
+
+## Tag reference
 
 | Tag | Result |
 | --- | --- |
@@ -31,39 +49,17 @@ Request templating and conversion for Caido Replay.
 | `<@uuid>` or `<@uuid/>` | Generate a UUID |
 | `<@ts>` or `<@ts/>` | Generate a Unix timestamp |
 
-Transforms can be nested. `</@>` closes the current transform, while a named closing tag such as `</@url>` must match the current transform. A transform without a closing tag applies through the end of the request, including across line breaks. Nested transforms left open at the end close from innermost to outermost.
+`</@>` closes the current transform. A named closing tag such as `</@url>` must match its opening tag. A transform left open applies through the end of the input, including across lines. `repeat` and `loop` accept non-negative integers and cap values above `100000`.
 
-`repeat` and `loop` accept non-negative integers. Values above `100000` are capped.
+## Build from source
 
-## Enable converted Replay sending
-
-The plugin installs the `Nytrovertor Convert` workflow, but you need to connect it to Replay with one Match and Replace rule:
-
-1. Create a Match and Replace rule.
-2. Set the section to `Request Raw`.
-3. Set the matcher to `Full`.
-4. Set the replacer to `Workflow` and select `Nytrovertor Convert`.
-5. Set the source to `Replay` and enable the rule.
-
-Use Replay's normal send action after that. The tagged template stays in the editor, while the workflow converts the complete raw request immediately before it is sent. If conversion fails, the workflow returns the original request instead of an empty replacement.
-
-## Development
-
-Use Node.js 22 and pnpm 12.14.0. CI validates lint, types, tests, unused code, and
-the complete frontend/workflow package on pushes and pull requests.
+Use Node.js 22.18 or newer and pnpm 12.14.0:
 
 ```sh
 pnpm install
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm knip
 pnpm build
 ```
 
-Install `dist/plugin_package.zip` in Caido. The plugin includes a frontend and the
-Convert workflow; it does not require a backend plugin. Open **Nytrovertor** in the
-sidebar for setup instructions and the tag reference.
+Install `dist/plugin_package.zip` in Caido. The package includes the frontend and Convert workflow; it needs no backend plugin.
 
-`pnpm watch` watches the frontend, but does not package workflow changes. Run
-`pnpm build` and reinstall the package after changing the workflow or renderer.
+For development, run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm knip`. `pnpm watch` watches the frontend but does not repackage workflow changes; run `pnpm build` and reinstall the ZIP after changing the workflow or shared renderer.
