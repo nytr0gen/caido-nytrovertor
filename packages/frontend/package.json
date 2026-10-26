@@ -1,0 +1,19 @@
+{
+  "name": "frontend",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "typecheck": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@caido/primevue": "0.1.2",
+    "primevue": "4.1.0",
+    "vue": "3.4.37"
+  },
+  "devDependencies": {
+    "@caido/sdk-frontend": "^0.58.3",
+    "@codemirror/state": "6.6.0",
+    "@codemirror/view": "6.28.1",
+    "vue-tsc": "2.0.29"
+  }
+}
