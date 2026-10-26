@@ -32,6 +32,15 @@ Use this file as the working contract for any agent making changes in this repo.
 4. If a change removes or restructures code broadly, also run `pnpm knip`.
 5. If you discover a new SDK limitation, shortcut caveat, or behavior trap while implementing or debugging, update this file in the same change.
 
+## Engineering Guidelines
+
+- State assumptions when requirements are unclear; ask before making a risky choice.
+- Make the smallest change that meets the request, follow existing style, and avoid unrelated refactors or speculative features.
+- Encourage code comments that explain invariants or traps that are not readily apparent from the code alone.
+- Comments inside code should omit final punctuation; this rule does not apply to other documentation.
+- Add focused tests for behavior changes and bug fixes when practical; verify a bug reproduces before fixing it.
+- Record only durable, repo-specific traps or invariants here, and update an existing bullet instead of duplicating it.
+
 ## General Coding Rules
 
 - Use TypeScript for all code changes.
@@ -47,7 +56,7 @@ Use this file as the working contract for any agent making changes in this repo.
 
 ## Naming and Organization
 
-- Use camelCase for folders such as `requestViewer`.
+- Use camelCase for non-component folders.
 - Use PascalCase for component folders.
 - Use camelCase for non-component filenames.
 - If a Vue component grows beyond a single file, prefer this structure:
@@ -94,10 +103,12 @@ ComponentName/
 - The plugin identity and route are `nytrovertor` and `/nytrovertor`; keep the root ID `plugin--nytrovertor` aligned with the CSS prefix in `caido.config.ts`.
 - The plugin contains only a frontend and a packaged Convert workflow. Do not restore the former toolkit utilities or backend.
 - Converted URL copying uses connection details from `RequestContext.request` and a rendered Host header override. It requires no backend request lookup and works for Replay drafts without a saved request ID.
-- Imported frontend CSS is prefix-wrapped under `#plugin--nytrovertor`; Caido-hosted view modes are outside that root.
+- Imported frontend CSS is prefix-wrapped under `#plugin--nytrovertor`; Caido-hosted view modes are outside that root. Do not rely on the plugin's Tailwind utility classes for layout inside a hosted view mode; size the view and its editor explicitly.
 - Nytrovertor is Replay-only in v1.
 - Nytrovertor keeps `<@...>` tags in the Replay editor and renders the converted output in the custom Replay request view mode labeled `Converted`.
 - Replay request view modes receive the live draft as the `draft` prop with current `@caido/sdk-frontend` typings; use `draft.raw` directly instead of mirroring editor state through a CodeMirror extension or plugin store.
+- The Converted view uses `sdk.ui.httpRequestEditor()` for Caido's native HTTP styling. `getEditorView()` is undefined until the editor element is attached to the DOM; append `getElement()` before accessing the view. The native editor is read-only by default and owns its CodeMirror lifecycle; only update it from each rendered draft.
+- Caido 0.58.3's `httpRequestEditor()` includes its own `Request` header inside an open shadow root, with no documented option to disable it. A Replay view mode already has Caido's outer Request header, so the Converted pane hides the inner `.c-editor-http-request__header` in that editor's shadow root. This shadow-root CSS is brittle because it targets Caido's internal class and may need adjustment after SDK upgrades.
 - Nytrovertor transformed sends go through the packaged `Nytrovertor Convert` workflow plus a user-created Match and Replace rule: `Request Raw`, `Full`, `Workflow: Nytrovertor Convert`, source `Replay`.
 - Nytrovertor does not own Replay sending or bind `Ctrl/Cmd+Enter`; Caido's native send action applies the Match and Replace workflow while leaving the tagged draft in the editor.
 - Caido 0.57 removed `raw`, `connectionInfo`, `overwriteDraft`, and `updateContentLength` from the frontend `SendRequestOptions`; `sdk.replay.sendRequest(...)` sends the session's current draft and only exposes the `background` option.
