@@ -29,6 +29,7 @@ type TransformName =
   | ""
   | "b64"
   | "b64d"
+  | "b64u"
   | "hex"
   | "hexd"
   | "html"
@@ -129,7 +130,10 @@ const encodeBase64 = (value: string) => {
 };
 
 const decodeBase64 = (value: string) => {
-  const normalized = value.replaceAll(/[\t\n\f\r ]/g, "");
+  const normalized = value
+    .replaceAll(/[\t\n\f\r ]/g, "")
+    .replaceAll("-", "+")
+    .replaceAll("_", "/");
   if (
     normalized.length % 4 === 1 ||
     !/^[A-Za-z0-9+/]*={0,2}$/.test(normalized)
@@ -347,6 +351,17 @@ const transformRegistry = {
       return decoded === undefined
         ? invalid("Invalid Base64 input")
         : ok(decoded);
+    },
+  },
+  b64u: {
+    kind: "transform",
+    apply: (value) => {
+      return ok(
+        encodeBase64(value)
+          .replaceAll("+", "-")
+          .replaceAll("/", "_")
+          .replace(/=+$/, ""),
+      );
     },
   },
   hex: {

@@ -126,6 +126,7 @@ ComponentName/
 - Any paired Nytrovertor transform without a closing tag applies through the end of the input. Nested transforms implicitly close from innermost to outermost at EOF, while mismatched named closing tags remain errors.
 - Nytrovertor transform tags may use the exact wildcard closing form `</@>` to close the current open transform; named closing tags should stay strict and must still match the current transform when present.
 - `repeat` and its exact alias `loop` are transform-only Nytrovertor tags with required integer argument syntax such as `<@repeat(n)>...</@>` or `<@loop(n)>...</@>`; allow `0`, reject spaces/decimals/negatives, and cap values above `100000` at that limit.
+- `b64u` emits unpadded URL-safe Base64 using `-` and `_`; the existing `b64d` accepts both standard and URL-safe alphabets, with or without padding. Do not add a separate Base64URL decode tag.
 - `htmld` must stay a pure string/entity decoder in `packages/workflows/src/nytrovertor-convert/render.ts`; do not reintroduce DOM parsing through `innerHTML` or `DOMParser`.
 - Nytrovertor preview, copy, and workflow execution rerender from their current template input each time; do not cache rendered results just to stabilize `uuid` or `ts`.
 - Request menu items registered through `sdk.menu.registerItem(...)` are global across Caido request panes. A command `when(...)` handler prevents execution outside its intended page but does not hide the menu item there; use a page-specific slot when the action must only be visible on one page.

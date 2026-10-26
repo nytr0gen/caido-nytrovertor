@@ -18,7 +18,8 @@ Request templating and conversion for Caido Replay.
 | `<@urld>text</@>` | URL-decode text |
 | `<@urlall>text</@>` | Percent-encode every UTF-8 byte |
 | `<@b64>text</@>` | Base64-encode UTF-8 text |
-| `<@b64d>text</@>` | Base64-decode UTF-8 text |
+| `<@b64u>text</@>` | Base64URL-encode UTF-8 text |
+| `<@b64d>text</@>` | Decode standard or URL-safe Base64 |
 | `<@hex>text</@>` | Hex-encode text |
 | `<@hexd>text</@>` | Hex-decode text |
 | `<@html>text</@>` | Encode HTML entities |

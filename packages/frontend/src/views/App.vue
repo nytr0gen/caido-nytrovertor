@@ -6,7 +6,8 @@ const tagReference = `Transforms
 <@urld>text</@>            URL decode
 <@urlall>text</@>          Percent-encode every UTF-8 byte
 <@b64>text</@>             Base64 encode UTF-8 text
-<@b64d>text</@>            Base64 decode UTF-8 text
+<@b64u>text</@>            Base64URL encode UTF-8 text
+<@b64d>text</@>            Base64 or Base64URL decode UTF-8 text
 <@hex>text</@>             Hex encode
 <@hexd>text</@>            Hex decode
 <@html>text</@>            HTML entity encode
