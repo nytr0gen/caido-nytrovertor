@@ -4,7 +4,8 @@ Request templating and conversion for Caido Replay.
 
 ## Features
 
-- Write Nytrovertor tags in the plugin page and see the converted text update live, with a Copy button for the result.
+- Write Nytrovertor tags in the plugin page and see the converted text update live, with Copy buttons for input and output.
+- Use Auto to detect layered URL, HTML entity, Base64, or Hex encoding in selected text or the whole input and insert the matching decoder tags.
 - Write nested transform tags directly in Replay while keeping the tagged template in the editor.
 - Preview the rendered request in the `Converted` request pane.
 - Send rendered requests through the packaged `Nytrovertor Convert` Match and Replace workflow.

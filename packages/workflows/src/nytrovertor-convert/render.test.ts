@@ -1,4 +1,4 @@
-import { renderNytrovertorTemplate } from "./render.ts";
+import { findAutoDecodeTags, renderNytrovertorTemplate } from "./render.ts";
 
 const successCases = [
   ["<@hex>\u0000\nabcéÿ😀</@>", "000A616263E9FF"],
@@ -69,4 +69,60 @@ for (const [input, expectedError] of errorCases) {
       `Expected ${JSON.stringify(input)} to fail with ${JSON.stringify(expectedError)}, got ${JSON.stringify(result)}`,
     );
   }
+}
+
+const autoDecodeCases = [
+  ["SGVsbG8=", ["b64d"], "Hello"],
+  ["YQ==", ["b64d"], "a"],
+  ["SGVsbG8_", ["b64d"], "Hello?"],
+  ["74657374", ["hexd"], "test"],
+  ["74:65:73:74", ["hexd"], "test"],
+  ["&lt;", ["htmld"], "<"],
+  ["SGVsbG8%3D", ["urld", "b64d"], "Hello"],
+  ["534756736247383D", ["hexd", "b64d"], "Hello"],
+  ["%2526amp%253B", ["urld", "urld", "htmld"], "&"],
+  ["hello", [], "hello"],
+  ["41", [], "41"],
+  ["4142", [], "4142"],
+  ["deadbeef", [], "deadbeef"],
+  ["YQ", [], "YQ"],
+  ["%GG", [], "%GG"],
+  ["%00", [], "%00"],
+  ["<@urld>SGVsbG8=", [], "<@urld>SGVsbG8="],
+] as const;
+
+for (const [input, expectedTags, expectedOutput] of autoDecodeCases) {
+  const tags = findAutoDecodeTags(input);
+  if (JSON.stringify(tags) !== JSON.stringify(expectedTags)) {
+    throw new Error(
+      `Expected ${JSON.stringify(input)} to use ${JSON.stringify(expectedTags)}, got ${JSON.stringify(tags)}`,
+    );
+  }
+
+  if (tags.length === 0) {
+    continue;
+  }
+
+  const template = tags.reduce<string>(
+    (value, tag) => `<@${tag}>${value}</@>`,
+    input,
+  );
+  const result = renderNytrovertorTemplate(template);
+  if (result.kind !== "Ok" || result.value !== expectedOutput) {
+    throw new Error(
+      `Expected ${JSON.stringify(template)} to render as ${JSON.stringify(expectedOutput)}, got ${JSON.stringify(result)}`,
+    );
+  }
+}
+
+if (findAutoDecodeTags("A".repeat(65537)).length !== 0) {
+  throw new Error("Auto decoding must reject oversized input");
+}
+
+let deeplyEncoded = "&";
+for (let index = 0; index < 9; index += 1) {
+  deeplyEncoded = encodeURIComponent(deeplyEncoded);
+}
+if (findAutoDecodeTags(deeplyEncoded).length !== 8) {
+  throw new Error("Auto decoding must stop after eight layers");
 }

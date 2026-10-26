@@ -129,11 +129,15 @@ const encodeBase64 = (value: string) => {
   return output;
 };
 
-const decodeBase64 = (value: string) => {
-  const normalized = value
+const normalizeBase64 = (value: string) => {
+  return value
     .replaceAll(/[\t\n\f\r ]/g, "")
     .replaceAll("-", "+")
     .replaceAll("_", "/");
+};
+
+const decodeBase64 = (value: string) => {
+  const normalized = normalizeBase64(value);
   if (
     normalized.length % 4 === 1 ||
     !/^[A-Za-z0-9+/]*={0,2}$/.test(normalized)
@@ -424,7 +428,7 @@ const transformRegistry = {
       return ok(encodeAllUrlBytes(value));
     },
   },
-  urlalld: urlDecodeTransform, // Same as urld.
+  urlalld: urlDecodeTransform, // Same as urld
   urld: urlDecodeTransform,
   uuid: {
     kind: "generator",
@@ -433,6 +437,111 @@ const transformRegistry = {
     },
   },
 } satisfies Record<TransformName, TransformDefinition>;
+
+const autoDecoderNames = ["urld", "htmld", "b64d", "hexd"] as const;
+type AutoDecoderName = (typeof autoDecoderNames)[number];
+
+const isReadableAutoText = (value: string) => {
+  for (const character of value) {
+    const codePoint = character.codePointAt(0) ?? 0;
+    if (
+      (codePoint < 0x20 &&
+        codePoint !== 0x09 &&
+        codePoint !== 0x0a &&
+        codePoint !== 0x0d) ||
+      (codePoint >= 0x7f && codePoint <= 0x9f)
+    ) {
+      return false;
+    }
+  }
+
+  return true;
+};
+
+const canAutoDecode = (name: AutoDecoderName, value: string) => {
+  if (name === "urld") {
+    return /%[0-9a-fA-F]{2}/.test(value);
+  }
+
+  if (name === "htmld") {
+    return value.includes("&") && value.includes(";");
+  }
+
+  if (name === "b64d") {
+    const normalized = normalizeBase64(value);
+    return normalized.length >= 4 && /^[A-Za-z0-9+/]+={0,2}$/.test(normalized);
+  }
+
+  const trimmed = value.trim();
+  return (
+    (/^[0-9a-fA-F]{6,}$/.test(trimmed) && trimmed.length % 2 === 0) ||
+    /^[0-9a-fA-F]{2}(?:[ :\t\r\n-]+[0-9a-fA-F]{2})+$/.test(trimmed)
+  );
+};
+
+export const findAutoDecodeTags = (input: string): AutoDecoderName[] => {
+  if (input.length === 0 || input.length > 65536 || /<\/?@/.test(input)) {
+    return [];
+  }
+
+  const queue: { value: string; tags: AutoDecoderName[] }[] = [
+    { value: input, tags: [] },
+  ];
+  const seen = new Set([`0\0${input}`]);
+  let bestTags: AutoDecoderName[] = [];
+
+  for (let index = 0; index < queue.length; index += 1) {
+    const item = queue[index];
+    if (item === undefined || item.tags.length >= 8) {
+      continue;
+    }
+
+    for (const name of autoDecoderNames) {
+      if (queue.length >= 64) {
+        break;
+      }
+
+      if (!canAutoDecode(name, item.value)) {
+        continue;
+      }
+
+      const result = transformRegistry[name].apply(item.value);
+      if (
+        result.kind === "Error" ||
+        result.value === item.value ||
+        !isReadableAutoText(result.value)
+      ) {
+        continue;
+      }
+
+      if (name === "b64d") {
+        const normalized = normalizeBase64(item.value).replace(/=+$/, "");
+        const canonical = encodeBase64(result.value).replace(/=+$/, "");
+        if (normalized !== canonical) {
+          continue;
+        }
+      }
+
+      if (name === "hexd" && !/[A-Za-z0-9]/.test(result.value)) {
+        continue;
+      }
+
+      const tags = [...item.tags, name];
+      const key = `${tags.length}\0${result.value}`;
+      if (seen.has(key)) {
+        continue;
+      }
+
+      seen.add(key);
+      queue.push({ value: result.value, tags });
+      if (tags.length > bestTags.length) {
+        bestTags = tags;
+      }
+    }
+  }
+
+  return bestTags;
+};
 
 const isTransformName = (value: string): value is TransformName => {
   return value in transformRegistry;

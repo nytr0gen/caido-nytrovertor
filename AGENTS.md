@@ -129,7 +129,7 @@ ComponentName/
 - `b64u` emits unpadded URL-safe Base64 using `-` and `_`; the existing `b64d` accepts both standard and URL-safe alphabets, with or without padding. Do not add a separate Base64URL decode tag.
 - `htmld` must stay a pure string/entity decoder in `packages/workflows/src/nytrovertor-convert/render.ts`; do not reintroduce DOM parsing through `innerHTML` or `DOMParser`.
 - Nytrovertor preview, copy, and workflow execution rerender from their current template input each time; do not cache rendered results just to stabilize `uuid` or `ts`.
-- The page's live converter renders handwritten `<@...>` templates through the same renderer used by Replay, including generators and nested transforms.
+- The page's live converter renders handwritten `<@...>` templates through the same renderer used by Replay, including generators and nested transforms. Its Auto button inserts nested decoder tags around selected input (or all input) using a bounded detector in the shared renderer; detection must guard Hex's permissive transform and reject ambiguous or non-text decodes.
 - Request menu items registered through `sdk.menu.registerItem(...)` are global across Caido request panes. A command `when(...)` handler prevents execution outside its intended page but does not hide the menu item there; use a page-specific slot when the action must only be visible on one page.
 
 ## Lint and Safety Notes

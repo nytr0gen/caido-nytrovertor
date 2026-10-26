@@ -3,9 +3,10 @@ import type { Caido } from "@caido/sdk-frontend";
 import Button from "primevue/button";
 import Card from "primevue/card";
 import Textarea from "primevue/textarea";
-import { computed, ref } from "vue";
+import { computed, nextTick, ref } from "vue";
 
 import {
+  findAutoDecodeTags,
   formatRenderError,
   renderNytrovertorTemplate,
 } from "../nytrovertor/render";
@@ -47,6 +48,36 @@ const copyText = async (text: string, description: string) => {
   }
 };
 
+const autoDecode = async () => {
+  const textarea = document.getElementById("nytrovertor-input");
+  if (!(textarea instanceof HTMLTextAreaElement)) {
+    return;
+  }
+
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  const hasSelection = end > start;
+  const target = hasSelection ? input.value.slice(start, end) : input.value;
+  const tags = findAutoDecodeTags(target);
+  if (tags.length === 0) {
+    props.sdk.window.showToast("No safe decoding chain found", {
+      variant: "info",
+    });
+    return;
+  }
+
+  const wrapped = tags.reduce((value, tag) => `<@${tag}>${value}</@>`, target);
+  input.value = hasSelection
+    ? input.value.slice(0, start) + wrapped + input.value.slice(end)
+    : wrapped;
+
+  await nextTick();
+  const caret = hasSelection ? start + wrapped.length : wrapped.length;
+  textarea.focus();
+  textarea.setSelectionRange(caret, caret);
+  inputSelection.value = { start: caret, end: caret };
+};
+
 const tagReference = `Transforms
 <@url>text</@>             URL encode
 <@urld>text</@>            URL decode
@@ -80,8 +111,8 @@ repeat and loop accept integers from 0 to 100000; larger values use 100000.`;
       <Card>
         <template #title>Live converter</template>
         <template #subtitle
-          >Write Nytrovertor tags in the input; the converted text updates as
-          you type.</template
+          >Write tags or select encoded text and click Auto; the converted text
+          updates as you type.</template
         >
         <template #content>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -90,19 +121,29 @@ repeat and loop accept integers from 0 to 100000; larger values use 100000.`;
                 <label for="nytrovertor-input" class="text-sm font-medium"
                   >Input</label
                 >
-                <Button
-                  label="Copy"
-                  icon="fas fa-copy"
-                  size="small"
-                  text
-                  :disabled="input.length === 0"
-                  @click="copyText(input, 'Input text')"
-                />
+                <div class="flex items-center gap-1">
+                  <Button
+                    label="Auto"
+                    icon="fas fa-wand-magic-sparkles"
+                    size="small"
+                    text
+                    :disabled="input.length === 0"
+                    @click="autoDecode"
+                  />
+                  <Button
+                    label="Copy"
+                    icon="fas fa-copy"
+                    size="small"
+                    text
+                    :disabled="input.length === 0"
+                    @click="copyText(input, 'Input text')"
+                  />
+                </div>
               </div>
               <Textarea
                 id="nytrovertor-input"
                 v-model="input"
-                rows="12"
+                rows="15"
                 class="w-full font-mono"
                 placeholder="<@url>Hello world</@>"
                 @select="updateInputSelection"
@@ -151,7 +192,7 @@ repeat and loop accept integers from 0 to 100000; larger values use 100000.`;
               <Textarea
                 id="nytrovertor-output"
                 :model-value="output"
-                rows="12"
+                rows="15"
                 readonly
                 class="w-full font-mono"
                 placeholder="Converted text appears here"
