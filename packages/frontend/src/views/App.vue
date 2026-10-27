@@ -3,7 +3,7 @@ import type { Caido } from "@caido/sdk-frontend";
 import Button from "primevue/button";
 import Card from "primevue/card";
 import Textarea from "primevue/textarea";
-import { computed, nextTick, ref } from "vue";
+import { computed, nextTick, ref, type Ref } from "vue";
 
 import {
   findAutoDecodeTags,
@@ -11,9 +11,9 @@ import {
   renderNytrovertorTemplate,
 } from "../nytrovertor/render";
 
-const props = defineProps<{ sdk: Caido }>();
+const props = defineProps<{ sdk: Caido; converterInput: Ref<string> }>();
 
-const input = ref("");
+const input = props.converterInput;
 const result = computed(() => renderNytrovertorTemplate(input.value));
 const output = computed(() =>
   result.value.kind === "Ok" ? result.value.value : "",
