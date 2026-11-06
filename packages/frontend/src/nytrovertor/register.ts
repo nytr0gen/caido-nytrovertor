@@ -7,6 +7,7 @@ import {
   copyConvertedUrl,
 } from "./actions";
 import ConvertedRequestView from "./ConvertedRequestView.vue";
+import { findAutoDecodeTags } from "./render";
 
 const copyConvertedRequestCommandId = "nytrovertor.copy-converted-request";
 const copyConvertedUrlCommandId = "nytrovertor.copy-converted-url";
@@ -31,7 +32,10 @@ export const registerNytrovertorFeature = (
         return;
       }
 
-      converterInput.value = context.selection;
+      converterInput.value = findAutoDecodeTags(context.selection).reduce(
+        (value, tag) => `<@${tag}>${value}</@>`,
+        context.selection,
+      );
       sdk.navigation.goTo("/nytrovertor");
     },
     when: (context) =>
