@@ -36,6 +36,7 @@ Open **Nytrovertor** from the Caido sidebar to experiment with tags before using
 | --- | --- |
 | `<@url>text</@>` | URL-encode text |
 | `<@urld>text</@>` | URL-decode text |
+| `<@urldplus>text</@>` | URL-decode text, treating `+` as a space |
 | `<@urlall>text</@>` | Percent-encode every UTF-8 byte |
 | `<@b64>text</@>` | Base64-encode UTF-8 text |
 | `<@b64u>text</@>` | Base64URL-encode UTF-8 text |

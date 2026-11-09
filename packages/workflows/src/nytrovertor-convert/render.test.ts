@@ -18,6 +18,8 @@ const successCases = [
   ["<@b64d>w7_Dvw==</@>", "ÿÿ"],
   ["<@b64d>8J+YgA==</@>", "😀"],
   ["<@urld>a%20b", "a b"],
+  ["<@urldplus>a+b%2Bc", "a b+c"],
+  ["<@urldplus>a%20b", "a b"],
   ["<@repeat(2)>ab", "abab"],
   ["<@>unchanged", "unchanged"],
   ["<@url>x=<@b64>a b", "x%3DYSBi"],
@@ -60,6 +62,7 @@ const errorCases = [
   ["<@url>x<@b64>y</@url>", "Expected closing tag </@b64>"],
   ["</@>", "Unexpected closing tag </@>"],
   ["<@urld>%", "Invalid percent-encoded input"],
+  ["<@urldplus>a+%", "Invalid percent-encoded input"],
 ] as const;
 
 for (const [input, expectedError] of errorCases) {

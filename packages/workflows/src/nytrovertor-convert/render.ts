@@ -41,6 +41,7 @@ type TransformName =
   | "urlall"
   | "urlalld"
   | "urld"
+  | "urldplus"
   | "uuid";
 
 type RenderError = {
@@ -430,6 +431,10 @@ const transformRegistry = {
   },
   urlalld: urlDecodeTransform, // Same as urld
   urld: urlDecodeTransform,
+  urldplus: {
+    kind: "transform",
+    apply: (value) => urlDecodeTransform.apply(value.replaceAll("+", " ")),
+  },
   uuid: {
     kind: "generator",
     apply: () => {

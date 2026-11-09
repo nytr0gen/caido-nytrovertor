@@ -81,6 +81,7 @@ const autoDecode = async () => {
 const tagReference = `Transforms
 <@url>text</@>             URL encode
 <@urld>text</@>            URL decode
+<@urldplus>text</@>        URL decode, treating + as space
 <@urlall>text</@>          Percent-encode every UTF-8 byte
 <@b64>text</@>             Base64 encode UTF-8 text
 <@b64u>text</@>            Base64URL encode UTF-8 text
