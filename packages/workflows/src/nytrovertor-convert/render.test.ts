@@ -1,4 +1,8 @@
-import { findAutoDecodeTags, renderNytrovertorTemplate } from "./render.ts";
+import {
+  findAutoDecodeTags,
+  findInverseWrapperTags,
+  renderNytrovertorTemplate,
+} from "./render.ts";
 
 const successCases = [
   ["<@hex>\u0000\nabcéÿ😀</@>", "000A616263E9FF"],
@@ -128,4 +132,48 @@ for (let index = 0; index < 9; index += 1) {
 }
 if (findAutoDecodeTags(deeplyEncoded).length !== 8) {
   throw new Error("Auto decoding must stop after eight layers");
+}
+
+const inverseWrapperCases = [
+  [
+    "<@b64d><@urld><@b64d><@htmld>text</@></@></@></@>",
+    ["b64", "url", "b64", "html"],
+  ],
+  [
+    "<@b64><@url><@hex><@html>text</@></@></@></@>",
+    ["b64d", "urld", "hexd", "htmld"],
+  ],
+  ["<@b64d><@urld><@repeat(2)>text</@></@></@>", ["b64", "url"]],
+  ["before <@b64d>SGVsbG8=</@>", []],
+  ["<@repeat(2)><@b64d>SGVsbG8=</@></@>", []],
+  ["<@b64d>SGVsbG8=</@b64d>", ["b64"]],
+  ["<@b64d>SGVsbG8=</@url>", []],
+] as const;
+
+for (const [input, expected] of inverseWrapperCases) {
+  const tags = findInverseWrapperTags(input);
+  if (JSON.stringify(tags) !== JSON.stringify(expected)) {
+    throw new Error(
+      `Expected ${JSON.stringify(input)} to invert ${JSON.stringify(expected)}, got ${JSON.stringify(tags)}`,
+    );
+  }
+}
+
+let reversibleTemplate = "<@b64d><@urld>SGVsbG8%3D</@></@>";
+for (const expected of ["SGVsbG8%3D", "Hello"]) {
+  const rendered = renderNytrovertorTemplate(reversibleTemplate);
+  if (rendered.kind !== "Ok") {
+    throw new Error(`Failed to render ${JSON.stringify(reversibleTemplate)}`);
+  }
+
+  reversibleTemplate = findInverseWrapperTags(reversibleTemplate).reduce(
+    (value, tag) => `<@${tag}>${value}</@>`,
+    rendered.value,
+  );
+  const reversed = renderNytrovertorTemplate(reversibleTemplate);
+  if (reversed.kind !== "Ok" || reversed.value !== expected) {
+    throw new Error(
+      `Expected the reversed template to render as ${JSON.stringify(expected)}, got ${JSON.stringify(reversed)}`,
+    );
+  }
 }

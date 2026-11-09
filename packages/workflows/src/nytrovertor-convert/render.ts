@@ -788,6 +788,43 @@ const parseNodes = (
   };
 };
 
+const inverseWrapperNames: Partial<Record<TransformName, TransformName>> = {
+  b64: "b64d",
+  b64d: "b64",
+  hex: "hexd",
+  hexd: "hex",
+  html: "htmld",
+  htmld: "html",
+  url: "urld",
+  urld: "url",
+};
+
+export const findInverseWrapperTags = (input: string): TransformName[] => {
+  const parsed = parseNodes(input);
+  if (parsed.kind === "Error") {
+    return [];
+  }
+
+  const tags: TransformName[] = [];
+  let nodes = parsed.value;
+  while (nodes.length === 1) {
+    const node = nodes[0];
+    if (node?.kind !== "Transform") {
+      break;
+    }
+
+    const inverse = inverseWrapperNames[node.name];
+    if (inverse === undefined) {
+      break;
+    }
+
+    tags.push(inverse);
+    nodes = node.children;
+  }
+
+  return tags;
+};
+
 const renderNodes = (nodes: Node[]): RenderResult => {
   let output = "";
 

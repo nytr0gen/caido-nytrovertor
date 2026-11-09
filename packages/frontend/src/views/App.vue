@@ -7,6 +7,7 @@ import { computed, nextTick, ref, type Ref } from "vue";
 
 import {
   findAutoDecodeTags,
+  findInverseWrapperTags,
   formatRenderError,
   renderNytrovertorTemplate,
 } from "../nytrovertor/render";
@@ -76,6 +77,14 @@ const autoDecode = async () => {
   textarea.focus();
   textarea.setSelectionRange(caret, caret);
   inputSelection.value = { start: caret, end: caret };
+};
+
+const useAsInput = () => {
+  const tags = findInverseWrapperTags(input.value);
+  input.value = tags.reduce(
+    (value, tag) => `<@${tag}>${value}</@>`,
+    output.value,
+  );
 };
 
 const tagReference = `Transforms
@@ -178,7 +187,7 @@ repeat and loop accept integers from 0 to 100000; larger values use 100000.`;
                     size="small"
                     text
                     :disabled="output.length === 0"
-                    @click="input = output"
+                    @click="useAsInput"
                   />
                   <Button
                     label="Copy"
