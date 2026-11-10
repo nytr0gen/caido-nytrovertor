@@ -123,7 +123,7 @@ ComponentName/
 - The Nytrovertor transform registry and conversion engine live in `packages/workflows/src/nytrovertor-convert/render.ts`. The workflow owns this implementation and the frontend imports it for preview and copy behavior; do not make the workflow depend on frontend/plugin code.
 - The Nytrovertor renderer must remain standalone and compatible with Caido's QuickJS workflow runtime. Avoid browser-only globals such as `window`, `document`, `btoa`, `atob`, `TextEncoder`, `TextDecoder`, or Web Crypto in that module.
 - Nytrovertor generator tags such as `uuid` and `ts` should accept both `<@tag>` and `<@tag/>`; do not require closing tags for generators.
-- The Nytrovertor null transform `<@>...</@>` uses the normal paired transform parser and passes its contents through unchanged.
+- The Nytrovertor null transform `<@>...</@>` uses the normal paired transform parser and passes its contents through unchanged. Inverse wrapper detection skips null wrappers and continues through their children without adding an inverse tag.
 - Any paired Nytrovertor transform without a closing tag applies through the end of the input. Nested transforms implicitly close from innermost to outermost at EOF, while mismatched named closing tags remain errors.
 - Nytrovertor transform tags may use the exact wildcard closing form `</@>` to close the current open transform; named closing tags should stay strict and must still match the current transform when present.
 - `repeat` and its exact alias `loop` are transform-only Nytrovertor tags with required integer argument syntax such as `<@repeat(n)>...</@>` or `<@loop(n)>...</@>`; allow `0`, reject spaces/decimals/negatives, and cap values above `100000` at that limit.

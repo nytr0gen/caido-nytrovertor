@@ -837,6 +837,11 @@ export const findInverseWrapperTags = (input: string): TransformName[] => {
       break;
     }
 
+    if (node.name === "") {
+      nodes = node.children;
+      continue;
+    }
+
     const inverse = inverseWrapperNames[node.name];
     if (inverse === undefined) {
       break;

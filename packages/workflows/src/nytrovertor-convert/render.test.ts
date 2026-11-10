@@ -145,6 +145,12 @@ if (findAutoDecodeTags(deeplyEncoded).length !== 8) {
 }
 
 const inverseWrapperCases = [
+  ["<@><@b64d>SGVsbG8=</@></@>", ["b64"]],
+  ["<@b64d><@><@urld>SGVsbG8%3D</@></@></@>", ["b64", "url"]],
+  ["<@><@><@b64d>SGVsbG8=", ["b64"]],
+  ["<@>text</@>", []],
+  ["<@>before <@b64d>SGVsbG8=</@></@>", []],
+  ["<@><@repeat(2)><@b64d>SGVsbG8=</@></@></@>", []],
   [
     "<@b64d><@urld><@b64d><@htmld>text</@></@></@></@>",
     ["b64", "url", "b64", "html"],
