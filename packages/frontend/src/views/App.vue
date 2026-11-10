@@ -102,6 +102,7 @@ const tagReference = `Transforms
 <@repeat(3)>text</@>       Repeat text three times
 <@loop(3)>text</@>         Alias for repeat
 <@>text</@>                Pass text through unchanged
+<@b64|url>text</@>        Compose transforms; url runs before b64
 
 Generators
 <@uuid>  or <@uuid/>       Generate a UUID

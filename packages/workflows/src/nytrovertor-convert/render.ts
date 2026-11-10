@@ -48,7 +48,7 @@ type RenderError = {
   error: string;
   kind: "Error";
   offset: number;
-  tagName?: TransformName;
+  tagName?: string;
 };
 
 type RenderResult =
@@ -549,10 +549,10 @@ export const findAutoDecodeTags = (input: string): AutoDecoderName[] => {
 };
 
 const isTransformName = (value: string): value is TransformName => {
-  return value in transformRegistry;
+  return Object.prototype.hasOwnProperty.call(transformRegistry, value);
 };
 
-const formatTag = (tagName: TransformName) => {
+const formatTag = (tagName: string) => {
   return `<@${tagName}>`;
 };
 
@@ -561,19 +561,39 @@ const wildcardCloseTag = "</@>";
 const parseOpenTag = (input: string, offset: number) => {
   const match = input
     .slice(offset)
-    .match(/^<@([a-z][a-z0-9]*)?(?:\(([^)]*)\))?(\s*\/)?>/);
+    .match(
+      /^<@([a-z][a-z0-9]*(?:\|[a-z][a-z0-9]*)*)?(?:\(([^)]*)\))?(\s*\/)?>/,
+    );
   if (match === null) {
     return invalid("Invalid transform tag syntax");
   }
 
-  const tagName = match[1] ?? "";
-
-  if (!isTransformName(tagName)) {
-    return invalid(`Unknown transform ${tagName}`);
+  const tagNames: TransformName[] = [];
+  for (const name of (match[1] ?? "").split("|")) {
+    if (!isTransformName(name)) {
+      return invalid(`Unknown transform ${name}`);
+    }
+    tagNames.push(name);
+  }
+  const firstTagName = tagNames[0];
+  if (firstTagName === undefined) {
+    return invalid("Invalid transform tag syntax");
   }
 
   const argument = match[2];
-  if (tagName === "loop" || tagName === "repeat") {
+  if (tagNames.length > 1) {
+    if (
+      argument !== undefined ||
+      tagNames.some((name) => name === "loop" || name === "repeat")
+    ) {
+      return invalid("Argument tags cannot be composed");
+    }
+    if (tagNames.some((name) => transformRegistry[name].kind === "generator")) {
+      return invalid("Generators cannot be composed");
+    }
+  }
+
+  if (firstTagName === "loop" || firstTagName === "repeat") {
     if (argument === undefined) {
       return invalid("Missing repeat count");
     }
@@ -591,14 +611,15 @@ const parseOpenTag = (input: string, offset: number) => {
 
     return ok({
       argument: repeatCount,
+      firstTagName,
       nextOffset: offset + fullMatch.length,
       selfClosing: match[3] !== undefined,
-      tagName,
+      tagNames,
     });
   }
 
   if (argument !== undefined) {
-    return invalid(`${formatTag(tagName)} does not accept arguments`);
+    return invalid(`${formatTag(firstTagName)} does not accept arguments`);
   }
 
   const fullMatch = match[0];
@@ -608,9 +629,10 @@ const parseOpenTag = (input: string, offset: number) => {
 
   return ok({
     argument: undefined,
+    firstTagName,
     nextOffset: offset + fullMatch.length,
     selfClosing: match[3] !== undefined,
-    tagName,
+    tagNames,
   });
 };
 
@@ -622,7 +644,9 @@ const parseCloseTag = (input: string, offset: number) => {
     });
   }
 
-  const match = input.slice(offset).match(/^<\/@([a-z][a-z0-9]*)\s*>/);
+  const match = input
+    .slice(offset)
+    .match(/^<\/@([a-z][a-z0-9]*(?:\|[a-z][a-z0-9]*)*)\s*>/);
   if (match === null) {
     return invalid("Invalid closing transform tag syntax");
   }
@@ -630,10 +654,6 @@ const parseCloseTag = (input: string, offset: number) => {
   const tagName = match[1];
   if (tagName === undefined) {
     return invalid("Invalid closing transform tag syntax");
-  }
-
-  if (!isTransformName(tagName)) {
-    return invalid(`Unknown transform ${tagName}`);
   }
 
   const fullMatch = match[0];
@@ -666,7 +686,7 @@ const pushTextNode = (nodes: Node[], value: string) => {
 
 const parseNodes = (
   input: string,
-  expectedTagName?: TransformName,
+  expectedTagName?: string,
   startOffset = 0,
 ): ParseResult => {
   const nodes: Node[] = [];
@@ -732,13 +752,13 @@ const parseNodes = (
         };
       }
 
-      const definition = transformRegistry[openTag.value.tagName];
+      const definition = transformRegistry[openTag.value.firstTagName];
       if (definition.kind === "generator") {
         nodes.push({
           argument: openTag.value.argument,
           children: [],
           kind: "Transform",
-          name: openTag.value.tagName,
+          name: openTag.value.firstTagName,
           offset: cursor,
         });
         cursor = openTag.value.nextOffset;
@@ -746,31 +766,35 @@ const parseNodes = (
         continue;
       }
 
+      const tagLabel = openTag.value.tagNames.join("|");
       if (openTag.value.selfClosing) {
         return {
-          error: `${formatTag(openTag.value.tagName)} cannot be self-closing`,
+          error: `${formatTag(tagLabel)} cannot be self-closing`,
           kind: "Error",
           offset: cursor,
-          tagName: openTag.value.tagName,
+          tagName: tagLabel,
         };
       }
 
-      const childResult = parseNodes(
-        input,
-        openTag.value.tagName,
-        openTag.value.nextOffset,
-      );
+      const childResult = parseNodes(input, tagLabel, openTag.value.nextOffset);
       if (childResult.kind === "Error") {
         return childResult;
       }
 
-      nodes.push({
-        argument: openTag.value.argument,
-        children: childResult.value,
-        kind: "Transform",
-        name: openTag.value.tagName,
-        offset: cursor,
-      });
+      nodes.push(
+        ...openTag.value.tagNames.reduceRight<Node[]>(
+          (children, name) => [
+            {
+              argument: openTag.value.argument,
+              children,
+              kind: "Transform",
+              name,
+              offset: cursor,
+            },
+          ],
+          childResult.value,
+        ),
+      );
       cursor = childResult.nextOffset;
       textStart = cursor;
       continue;

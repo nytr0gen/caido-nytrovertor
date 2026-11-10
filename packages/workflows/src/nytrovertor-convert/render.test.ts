@@ -30,6 +30,9 @@ const successCases = [
   ["<@url>x=<@b64>a b</@>", "x%3DYSBi"],
   ["<@url>x=<@b64>a b</@></@>", "x%3DYSBi"],
   ["<@url>x=<@b64>a b</@b64></@url>", "x%3DYSBi"],
+  ["<@b64|url>a b</@>", "YSUyMGI="],
+  ["<@b64|url>a b</@b64|url>", "YSUyMGI="],
+  ["<@b64|url>a b", "YSUyMGI="],
   ["<@url>a b</@>|<@b64>cd", "a%20b|Y2Q="],
   ["<@b64>xxx<@b64>yyy</@>zzz", "eHh4ZVhsNXp6eg=="],
   ["<@b64>xxx<@b64>yyy</@>zzz</@>", "eHh4ZVhsNXp6eg=="],
@@ -67,6 +70,13 @@ const errorCases = [
   ["</@>", "Unexpected closing tag </@>"],
   ["<@urld>%", "Invalid percent-encoded input"],
   ["<@urldplus>a+%", "Invalid percent-encoded input"],
+  ["<@b64|uuid>abc</@>", "Generators cannot be composed"],
+  ["<@b64|repeat>abc</@>", "Argument tags cannot be composed"],
+  ["<@b64|url(3)>abc</@>", "Argument tags cannot be composed"],
+  ["<@b64||url>abc</@>", "Invalid transform tag syntax"],
+  ["<@b64|constructor>abc</@>", "Unknown transform constructor"],
+  ["<@b64|url/>abc", "<@b64|url> cannot be self-closing"],
+  ["<@b64|url>abc</@url|b64>", "Expected closing tag </@b64|url>"],
 ] as const;
 
 for (const [input, expectedError] of errorCases) {
@@ -147,6 +157,7 @@ const inverseWrapperCases = [
   ["before <@b64d>SGVsbG8=</@>", []],
   ["<@repeat(2)><@b64d>SGVsbG8=</@></@>", []],
   ["<@b64d>SGVsbG8=</@b64d>", ["b64"]],
+  ["<@b64d|urld>SGVsbG8%3D</@>", ["b64", "url"]],
   ["<@b64d>SGVsbG8=</@url>", []],
 ] as const;
 
