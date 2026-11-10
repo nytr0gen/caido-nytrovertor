@@ -254,6 +254,12 @@ repeat and loop accept integers from 0 to 100000; larger values use 100000.`;
             conversion errors leave the original request unchanged.
           </p>
 
+          <p class="mt-4 mb-0 text-sm text-surface-400">
+            In Replay, select encoded text and press <code>Ctrl+D</code> to add
+            editable encoding tags, or <code>Ctrl+Shift+D</code> to send it to
+            the live converter. Both actions are also in the right-click menu.
+          </p>
+
           <h2 class="mt-6 mb-2 text-base font-semibold">Nytrovertor tags</h2>
           <pre
             class="m-0 overflow-x-auto rounded bg-surface-950 p-3 text-xs leading-relaxed text-surface-200"

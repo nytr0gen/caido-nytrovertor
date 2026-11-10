@@ -88,8 +88,9 @@ ComponentName/
 - Do not add runtime checks like `if ("showToast" in sdk.window)`.
 - Do not assume undocumented SDK methods exist.
 - Commands are frontend-only and should be registered through the frontend SDK.
-- Global shortcuts and command palette invocations run with `BaseContext`, not request-specific context.
-- Do not assume a shortcut can access the currently selected request row or request pane unless it is attached to an editor extension that provides editor-local state.
+- Global shortcuts and command palette invocations run with `BaseContext`, not request-specific context. Send to Converter's Ctrl+Shift+D shortcut reads `sdk.window.getActiveEditor()?.getSelectedText()` for `BaseContext`; its request/response menu actions use `context.selection`.
+- Replay's Ctrl+D auto conversion uses `sdk.shortcuts.register` and the active editor. It requires Replay, a writable editor, and a nonempty selection; `BaseContext` also requires editor focus, while request-menu invocations require the editor selection to match `context.selection`. It keeps the replacement selected and compares the rendered value with the original selection after trimming, lowercasing, and removing trailing `=` padding on both sides. Other normalization differences from decoder/encoder pairs still reject the conversion. Reject decoded tag markers before validating replacement tags, and catch validation failures: decoded text is literal data, and numeric HTML entities can produce lone surrogates that make URL encoding throw.
+- Do not infer request context from a global shortcut. For editor selections, use the documented active-editor API with the required page, focus, and editability checks, or an editor extension that provides editor-local state.
 - Keep `@caido/sdk-frontend` current and use its exported SDK and request types directly instead of maintaining local compatibility wrappers.
 
 ## Caido-Specific Guidance

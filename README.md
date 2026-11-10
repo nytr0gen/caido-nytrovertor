@@ -14,6 +14,8 @@ GET /search?q=<@url>Hello world</@> HTTP/1.1
 
 The `Converted` request pane previews `GET /search?q=Hello%20world HTTP/1.1`. Tags can be nested; `<@url><@b64>Hello world</@></@>` Base64-encodes the text, then URL-encodes the result. The request context menu can also copy the converted request or URL.
 
+Select encoded text and press **Ctrl+D**, or right-click → **Auto Convert Selection**, to turn it into editable encoding tags. For example, `YSUyMGI=` becomes `<@b64><@url>a b</@></@>`.
+
 To send converted requests, connect the packaged `Nytrovertor Convert` workflow to Replay with one Match and Replace rule:
 
 1. Create a Match and Replace rule.
@@ -27,6 +29,8 @@ Send with Caido's normal Replay action. The workflow converts the complete raw r
 ## Try tags in the live converter
 
 Open **Nytrovertor** from the Caido sidebar to experiment with tags before using them in Replay. Enter a template in **Input** and see the result update in **Output** as you type.
+
+Press **Ctrl+Shift+D**, or right-click → **Send to Converter**, to open selected request or response text here with automatic decoder tags.
 
 **Auto** detects likely layers of URL, HTML entity, Base64, or Hex encoding and inserts the corresponding decoder tags. Select part of the input to target it, or leave nothing selected to use the whole input. For example, `SGVsbG8%3D` becomes `<@b64d><@urld>SGVsbG8%3D</@></@>` and renders as `Hello`.
 
