@@ -5,7 +5,7 @@
   "scripts": {
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint \"./packages/*/src/**/*.{ts,vue}\" --fix",
-    "test": "node packages/workflows/src/nytrovertor-convert/render.test.ts && node packages/frontend/src/nytrovertor/url.test.ts && node packages/frontend/src/nytrovertor/autoConvert.test.ts && node packages/frontend/src/nytrovertor/setupReplay.test.ts && node packages/workflows/src/packagedWorkflow.test.ts",
+    "test": "node --test \"packages/*/src/**/*.test.ts\"",
     "knip": "knip",
     "build": "caido-dev build",
     "watch": "caido-dev watch"

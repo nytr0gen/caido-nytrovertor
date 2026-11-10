@@ -7,4 +7,7 @@ allowBuilds:
 patchedDependencies:
   '@caido-community/dev@0.1.6': patches/@caido-community__dev@0.1.6.patch
 
-trustPolicy: off
+trustPolicyExclude:
+  - chokidar@4.0.3
+  - synckit@0.9.3
+  - undici-types@6.21.0

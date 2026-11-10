@@ -6,11 +6,11 @@ const config: RawConfigurationOrFn = {
       entry: ["caido.config.ts", "eslint.config.mjs"],
     },
     "packages/frontend": {
-      entry: ["src/index.ts"],
+      entry: ["src/index.ts", "src/**/*.test.ts"],
       project: ["src/**/*.{ts,tsx,vue}"],
     },
     "packages/workflows": {
-      entry: ["src/nytrovertor-convert/javascript.ts"],
+      entry: ["src/nytrovertor-convert/javascript.ts", "src/**/*.test.ts"],
       project: ["src/**/*.ts"],
       ignoreDependencies: ["caido"],
     },

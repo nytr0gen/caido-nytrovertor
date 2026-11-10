@@ -136,9 +136,8 @@ ComponentName/
 
 ## Lint and Safety Notes
 
-- CI uses Node.js 22.18 or newer because tests run erasable TypeScript directly with Node's built-in type stripping. Node tests and build helpers use the Node 22 compatibility target in ESLint. Validation must include tests and the full package build with the workflow component.
+- CI uses Node.js 22.18 or newer because tests run erasable TypeScript directly with Node's built-in type stripping. Node tests and build helpers use the Node 22 compatibility target in ESLint. Validation must include tests and the full package build with the workflow component. Knip needs `src/**/*.test.ts` entries in each package workspace; the root Node test glob alone does not mark workspace tests as entry points.
 
-- The installed pnpm accepts `trustPolicy: off`; `ignore` fails workspace configuration parsing before any command runs.
 - Quote the lint file glob so the shell does not expand stale or empty package directories after package removal.
 - The ESLint config is authoritative. Fix lint issues instead of working around them.
 - Be explicit with nullable and empty string checks. Do not rely on loose falsy checks when the value can be a string.
