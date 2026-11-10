@@ -148,7 +148,7 @@ ComponentName/
 
 - Frontend bootstrap: `packages/frontend/src/index.ts`.
 - Replay features: `packages/frontend/src/nytrovertor`.
-- Setup and tag reference: `packages/frontend/src/views/App.vue`.
+- Page layout and setup: `packages/frontend/src/views/App.vue`; live converter: `packages/frontend/src/views/LiveConverter.vue`; tag reference: `packages/frontend/src/views/TagReference.vue`.
 - Shared renderer and packaged Convert workflow: `packages/workflows/src/nytrovertor-convert`.
 - Workflow compilation Vite hook: `packages/workflows/src/buildWorkflow.ts`; packaging support: `patches/@caido-community__dev@0.1.6.patch`.
 - Replay setup checks and mutations: `packages/frontend/src/nytrovertor/setupReplay.ts`.
