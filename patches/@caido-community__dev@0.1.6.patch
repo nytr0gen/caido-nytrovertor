@@ -1,0 +1,23 @@
+diff --git a/dist/cli.js b/dist/cli.js
+index b6c8bb6546b0a1cb20e2f55bdd1cf29c37680cd2..8d33f3edda67e976bf3910116d39e3adf6cbe018 100755
+--- a/dist/cli.js
++++ b/dist/cli.js
+@@ -264,6 +264,18 @@ async function bundlePackage(options) {
+         break;
+     }
+   }
++  for (const plugin of config.plugins.filter((plugin) => plugin.kind === "workflow")) {
++    const pluginDir = path6.join(pluginPackageDir, plugin.id);
++    const definitionPath = path6.join(pluginDir, path6.basename(plugin.definition));
++    await fs4.mkdir(pluginDir, { recursive: true });
++    await fs4.copyFile(path6.resolve(cwd, plugin.root, plugin.definition), definitionPath);
++    manifest.plugins.push({
++      id: plugin.id,
++      kind: "workflow",
++      name: plugin.name,
++      definition: slash(path6.relative(pluginPackageDir, definitionPath))
++    });
++  }
+   if (!validateManifest(manifest)) {
+     throw new Error(
+       "Manifest is not valid:" + JSON.stringify(manifest, null, 2)

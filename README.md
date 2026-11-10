@@ -16,13 +16,9 @@ The `Converted` request pane previews `GET /search?q=Hello%20world HTTP/1.1`. Ta
 
 Select encoded text and press **Ctrl+D**, or right-click → **Auto Convert Selection**, to turn it into editable encoding tags. For example, `YSUyMGI=` becomes `<@b64><@url>a b</@></@>`.
 
-To send converted requests, connect the packaged `Nytrovertor Convert` workflow to Replay with one Match and Replace rule:
+To send converted requests, open **Nytrovertor** and click **Set up Replay conversion in Match & Replace**. This enables one project-specific rule: **Request Raw → Full → Workflow: Nytrovertor Convert**, with **Replay** as its only source and no condition. Setup reports conflicting settings or duplicates without changing them.
 
-1. Create a Match and Replace rule.
-2. Set **Section** to `Request Raw`.
-3. Set **Matcher** to `Full`.
-4. Set **Replacer** to `Workflow` and choose `Nytrovertor Convert`.
-5. Enable the `Replay` source and the rule.
+The Convert workflow is included in the plugin package and updates with it. Use the setup button once per project, or to re-enable its rule.
 
 Send with Caido's normal Replay action. The workflow converts the complete raw request just before sending; the tagged draft remains in the editor. If a tag or conversion fails, it sends the original request unchanged.
 
@@ -65,6 +61,6 @@ pnpm install
 pnpm build
 ```
 
-Install `dist/plugin_package.zip` in Caido. The package includes the frontend and Convert workflow; it needs no backend plugin.
+Install `dist/plugin_package.zip` in Caido. The package contains the frontend and the `Nytrovertor Convert` workflow; there is no backend plugin.
 
-For development, run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm knip`. `pnpm watch` watches the frontend but does not repackage workflow changes; run `pnpm build` and reinstall the ZIP after changing the workflow or shared renderer.
+For development, run `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm knip`. `pnpm build` and `pnpm watch` run `caido-dev build` and `caido-dev watch`. A Vite hook compiles the workflow, and a pinned pnpm patch adds it to the CLI's package bundler. Watch rebuilds after changes to the frontend, workflow entry, shared renderer, or workflow definition and serves the package to Caido Devtools at `http://localhost:3000`.

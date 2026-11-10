@@ -12,6 +12,8 @@ import {
   renderNytrovertorTemplate,
 } from "../nytrovertor/render";
 
+import ReplaySetup from "./ReplaySetup.vue";
+
 const props = defineProps<{ sdk: Caido; converterInput: Ref<string> }>();
 
 const input = props.converterInput;
@@ -234,19 +236,10 @@ repeat and loop accept integers from 0 to 100000; larger values use 100000.`;
       <Card>
         <template #title>Nytrovertor Replay setup</template>
         <template #subtitle>
-          The Nytrovertor Convert workflow is installed with this plugin.
+          Enable conversion for this project's Replay requests.
         </template>
         <template #content>
-          <ol class="m-0 list-decimal space-y-2 pl-5 text-sm">
-            <li>Create a Match and Replace rule.</li>
-            <li>Set Section to <code>Request Raw</code>.</li>
-            <li>Set Matcher to <code>Full</code>.</li>
-            <li>
-              Set Replacer to <code>Workflow</code> and select
-              <code>Nytrovertor Convert</code>.
-            </li>
-            <li>Enable the <code>Replay</code> source.</li>
-          </ol>
+          <ReplaySetup :sdk="sdk" />
 
           <p class="mt-4 mb-0 text-sm text-surface-400">
             Caido's normal Replay send action will keep the tagged template in

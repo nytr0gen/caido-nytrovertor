@@ -4,4 +4,7 @@ packages:
 allowBuilds:
   esbuild: false
 
+patchedDependencies:
+  '@caido-community/dev@0.1.6': patches/@caido-community__dev@0.1.6.patch
+
 trustPolicy: off

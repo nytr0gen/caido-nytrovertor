@@ -7,6 +7,8 @@ import tailwindCaido from "@caido/tailwindcss";
 import path from "path";
 import prefixwrap from "postcss-prefixwrap";
 
+import { buildWorkflow } from "./packages/workflows/src/buildWorkflow";
+
 const id = "nytrovertor";
 export default defineConfig({
   id,
@@ -19,11 +21,18 @@ export default defineConfig({
   },
   plugins: [
     {
+      kind: "workflow",
+      id: "nytrovertor-convert",
+      name: "Nytrovertor Convert",
+      root: "packages/workflows",
+      definition: "dist/nytrovertor-convert.json",
+    },
+    {
       kind: "frontend",
       id: "frontend",
       root: "packages/frontend",
       vite: {
-        plugins: [vue()],
+        plugins: [vue(), buildWorkflow()],
         build: {
           rollupOptions: {
             external: [
